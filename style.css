@@ -1,0 +1,102 @@
+html {
+  background: linear-gradient(80deg, #303030, #0f0f0f);
+  height: 99%;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: white;
+}
+
+h1 {
+  color: #2e6da4;
+  margin: 20px 0px;
+  text-align: center;
+}
+
+.body-principal {
+  width: 100%;
+  max-width: 800px;
+  background: #9c9c9c;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 0 15px #f7f7f71a;
+}
+
+.Informar-Tropas {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+label {
+  font-weight: bold;
+  flex: 1 1 45%;
+}
+
+input[type="number"] {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 16px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 5px;
+}
+
+button {
+  padding: 15px 30px;
+  background-color: #4caf50;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  display: block;
+  margin: 0 auto;
+}
+
+button:hover {
+  background-color: #388e3c;
+}
+
+.result {
+  margin-top: 30px;
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.card {
+  background: #fafafa;
+  color: black;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 8px #00000014;
+  flex: 1 1 260px;
+  max-width: 320px;
+}
+
+.card h3 {
+  margin-top: 0;
+  color: #2e6da4;
+  margin-bottom: 10px;
+}
+
+.card p {
+  margin: 6px 0;
+}
+
+footer {
+  margin-top: 20px;
+  color: #bbb;
+  font-size: 14px;
+  text-align: center;
+}

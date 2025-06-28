@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulador de Coletas</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="header-principal">
+    <h1>Simulador de Coletas</h1>
+  </header>
+
+  <div class="body-principal">
+    <div class="Informar-Tropas">
+      <label for="lancaInput">
+        Quantidade de tropas tipo <strong>Lança</strong>:
+        <input type="number" id="lancaInput" placeholder="Ex: 300" min="0">
+      </label>
+      <label for="espadaInput">
+        Quantidade de tropas tipo <strong>Espada</strong>:
+        <input type="number" id="espadaInput" placeholder="Ex: 300" min="0">
+      </label>
+    </div>
+
+    <button onclick="simular()">Simular</button>
+
+    <div class="result" id="saida"></div>
+  </div>
+
+  <footer>
+    <p>Desenvolvido by Chat GPT - Por João</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
