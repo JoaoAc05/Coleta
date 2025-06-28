@@ -1,3 +1,5 @@
+// script.js
+
 const tabelas = {
   Grande: [
     { l: 10, e: 0, cap: 250, rec: 42, tempo: 23.45 },
@@ -43,14 +45,14 @@ const tabelas = {
   ]
 };
 
-function formatarTempo(minutos) {
+export function formatarTempo(minutos) {
   const hrs = Math.floor(minutos / 60);
   const min = Math.floor(minutos % 60);
   const seg = Math.round((minutos - Math.floor(minutos)) * 60);
   return `${hrs}:${min.toString().padStart(2, '0')}:${seg.toString().padStart(2, '0')}`;
 }
 
-function interpolar(tipo, lanca, espada) {
+export function interpolar(tipo, lanca, espada, tabelas) {
   const capacidade = lanca * 25 + espada * 15;
   const lista = tabelas[tipo];
   lista.sort((a, b) => a.cap - b.cap);
@@ -72,80 +74,75 @@ function interpolar(tipo, lanca, espada) {
   return null;
 }
 
-function simular() {
-  const lancaTotal = parseInt(document.getElementById("lancaInput").value) || 0;
-  const espadaTotal = parseInt(document.getElementById("espadaInput").value) || 0;
-  let lanca = lancaTotal;
-  let espada = espadaTotal;
-
-  const saida = document.getElementById("saida");
-  saida.innerHTML = "";
-
-  let resultados = [];
-  let tempoMax = 0;
-
-  for (const tipo of ["Grande", "Media", "Pequena"]) {
-    if (lanca === 0 && espada === 0) break;
-    let melhor = null;
+export function gerarCombinacoes(lanca, espada, tabelas) {
+  const combinacoes = [];
+  for (const tipo of Object.keys(tabelas)) {
     for (let i = 0; i <= lanca; i++) {
       for (let j = 0; j <= espada; j++) {
-        const sim = interpolar(tipo, i, j);
+        const sim = interpolar(tipo, i, j, tabelas);
         if (sim && sim.recurso > 0 && sim.capacidade <= (i * 25 + j * 15)) {
-          if (!melhor || sim.recurso / sim.tempo > melhor.recurso / melhor.tempo) {
-            melhor = { ...sim };
-          }
+          combinacoes.push(sim);
         }
       }
     }
-    if (melhor) {
-    const rep = Math.floor(tempoMax / melhor.tempo) || 1;
-
-    const totalLanca = melhor.lanca * rep;
-    const totalEspada = melhor.espada * rep;
-
-    // Verifica se há tropas suficientes
-    if (totalLanca <= lanca && totalEspada <= espada) {
-        melhor.repeticoes = rep;
-        tempoMax = Math.max(tempoMax, melhor.tempo);
-        resultados.push(melhor);
-        lanca -= totalLanca;
-        espada -= totalEspada;
-    }
-}
   }
+  return combinacoes;
+}
 
-  if (resultados.length === 0) {
-    saida.innerHTML = "<p>Não foi possível realizar nenhuma coleta.</p>";
+function gerarParticoes(combinacoes, lancaDisponivel, espadaDisponivel, index = 0, atual = [], resultados = []) {
+  if (index >= combinacoes.length) {
+    resultados.push([...atual]);
     return;
   }
+  gerarParticoes(combinacoes, lancaDisponivel, espadaDisponivel, index + 1, atual, resultados);
 
-  let totalRec = 0;
-  resultados.forEach(r => {
-    const recTotal = r.recurso * r.repeticoes;
-    totalRec += recTotal;
+  const comb = combinacoes[index];
+  if (comb.lanca <= lancaDisponivel && comb.espada <= espadaDisponivel) {
+    atual.push(comb);
+    gerarParticoes(
+      combinacoes,
+      lancaDisponivel - comb.lanca,
+      espadaDisponivel - comb.espada,
+      index + 1,
+      atual,
+      resultados
+    );
+    atual.pop();
+  }
+  return resultados;
+}
 
-    const card = document.createElement("div");
-    card.className = "card";
-    card.innerHTML = `
-      <h3>Coleta ${r.tipo}</h3>
-      <p><strong>Repetições:</strong> ${r.repeticoes}</p>
-      <p><strong>Tropas:</strong><br>
-        Lança: ${r.lanca * r.repeticoes}<br>
-        Espada: ${r.espada * r.repeticoes}</p>
-      <p><strong>Tempo por ciclo:</strong> ${formatarTempo(r.tempo)}</p>
-      <p><strong>Recurso total:</strong> ${recTotal.toFixed(0)}</p>
-    `;
-    saida.appendChild(card);
-  });
+export function simularOtimo(lancaTotal, espadaTotal, tabelas) {
+  const combinacoes = gerarCombinacoes(lancaTotal, espadaTotal, tabelas);
+  const todasParticoes = gerarParticoes(combinacoes, lancaTotal, espadaTotal);
 
-  const resumo = document.createElement("div");
-  resumo.className = "card";
-  resumo.innerHTML = `
-    <h3>Resumo Geral</h3>
-    <p><strong>Duração do ciclo:</strong> ${formatarTempo(tempoMax)}</p>
-    <p><strong>Total de recursos:</strong> ${totalRec.toFixed(0)}</p>
-    <p><strong>Tropas restantes:</strong> ${lanca} lanças, ${espada} espadas</p>
-    <p><strong>Eficiência:</strong> ${(totalRec / tempoMax).toFixed(2)} recursos/minuto</p>
-  `;
-  saida.appendChild(resumo);
+  let melhorParticao = null;
+  let melhorEficiência = 0;
+
+  for (const particao of todasParticoes) {
+    const totalRec = particao.reduce((acc, p) => acc + p.recurso, 0);
+    const tempoMax = particao.reduce((max, p) => Math.max(max, p.tempo), 0);
+    const eficiencia = totalRec / tempoMax;
+
+    if (eficiencia > melhorEficiência) {
+      melhorEficiência = eficiencia;
+      melhorParticao = particao;
+    }
+  }
+
+  let lancaUsadas = melhorParticao.reduce((acc, p) => acc + p.lanca, 0);
+  let espadaUsadas = melhorParticao.reduce((acc, p) => acc + p.espada, 0);
+  const tempoCiclo = melhorParticao.reduce((max, p) => Math.max(max, p.tempo), 0);
+  const totalRec = melhorParticao.reduce((acc, p) => acc + p.recurso, 0);
+
+  return {
+    combinacoes: melhorParticao,
+    totalRec,
+    tempoCiclo,
+    eficiencia: melhorEficiência,
+    tropasRestantes: {
+      lanca: lancaTotal - lancaUsadas,
+      espada: espadaTotal - espadaUsadas
+    }
+  };
 }
