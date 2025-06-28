@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulador de Coletas</title>
+   <style>
+    html {
+        background: linear-gradient(80deg, #303030, #0f0f0f);
+        height: 99%;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      /* padding: 20px; */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: white;
+    }
+
+    h1 {
+      color: #2e6da4;
+      margin: 20px 0px;
+      text-align: center;
+    }
+
+    .body-principal {
+      width: 100%;
+      max-width: 800px;
+      background: #afafaf;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #f7f7f71a;
+    }
+
+    .Informar-Tropas {
+      display: flex;
+      /* flex-direction: column; */
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input[type="number"] {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 16px;
+      width: 80%;
+      box-sizing: border-box;
+    }
+
+    button {
+      padding: 15px 30px;
+      background-color: #4caf50;
+      color: white;
+      font-size: 18px;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      display: block;
+      margin: 0 auto;
+    }
+
+    button:hover {
+      background-color: #388e3c;
+    }
+
+    .result {
+      margin-top: 30px;
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .card {
+      background: #fafafa;
+      color: black;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 8px #00000014;
+      flex: 1 1 260px;
+      max-width: 320px;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #2e6da4;
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      margin: 6px 0;
+    }
+  </style>
+</head>
+<body>
+    <header class="header-principal">
+        <h1>Simulador de Coletas</h1>
+    </header>
+    <div class="body-principal">
+        <div class="Informar-Tropas">
+            <label for="lancaInput">Quantidade de tropas tipo <strong>Lança</strong>:
+            <input type="number" id="lancaInput" placeholder="Ex: 300" min="0"></label>
+            <label for="espadaInput">Quantidade de tropas tipo <strong>Espada</strong>:
+            <input type="number" id="espadaInput" placeholder="Ex: 300" min="0"></label>
+        </div>
+    
+        <button onclick="simular()">Simular</button>
+    
+        <div class="result" id="saida">
+        </div>
+    </div>
+    <footer>
+        <p>Desenvolvido by Chat GPT - Por João</p>
+    </footer>
+    <script>
+        const tabelas = {
+        Grande: [
+            { l: 10, e: 0, cap: 250, rec: 42, tempo: 23.45 },
+            { l: 63, e: 0, cap: 1575, rec: 263, tempo: 60.45 },
+            { l: 120, e: 0, cap: 3000, rec: 500, tempo: 90.88 },
+            { l: 178, e: 0, cap: 4450, rec: 742, tempo: 120.35 },
+            { l: 0, e: 10, cap: 150, rec: 25, tempo: 26.38 },
+            { l: 0, e: 105, cap: 1575, rec: 263, tempo: 60.45 },
+            { l: 0, e: 120, cap: 1800, rec: 300, tempo: 65.38 },
+            { l: 0, e: 297, cap: 4455, rec: 743, tempo: 120.45 },
+            { l: 5, e: 5, cap: 200, rec: 33, tempo: 27.77 },
+            { l: 40, e: 40, cap: 1600, rec: 267, tempo: 61 },
+            { l: 60, e: 60, cap: 2400, rec: 400, tempo: 78.3 },
+            { l: 111, e: 111, cap: 4440, rec: 740, tempo: 120.15 }
+        ],
+        Media: [
+            { l: 10, e: 0, cap: 250, rec: 21, tempo: 25.67 },
+            { l: 126, e: 0, cap: 3150, rec: 263, tempo: 60.45 },
+            { l: 120, e: 0, cap: 3000, rec: 250, tempo: 58.78 },
+            { l: 356, e: 0, cap: 8900, rec: 742, tempo: 120.35 },
+            { l: 0, e: 10, cap: 150, rec: 13, tempo: 24.22 },
+            { l: 0, e: 210, cap: 3150, rec: 263, tempo: 60.45 },
+            { l: 0, e: 120, cap: 1800, rec: 150, tempo: 45.12 },
+            { l: 0, e: 594, cap: 8910, rec: 743, tempo: 120.45 },
+            { l: 5, e: 5, cap: 200, rec: 17, tempo: 24.95 },
+            { l: 80, e: 80, cap: 3200, rec: 267, tempo: 61 },
+            { l: 60, e: 60, cap: 2400, rec: 200, tempo: 52.03 },
+            { l: 222, e: 222, cap: 8880, rec: 740, tempo: 120.15 }
+        ],
+        Pequena: [
+            { l: 10, e: 0, cap: 250, rec: 8, tempo: 29.1 },
+            { l: 315, e: 0, cap: 7875, rec: 263, tempo: 60.45 },
+            { l: 120, e: 0, cap: 3000, rec: 100, tempo: 37.97 },
+            { l: 890, e: 0, cap: 22250, rec: 742, tempo: 120.35 },
+            { l: 0, e: 10, cap: 150, rec: 5, tempo: 22.82 },
+            { l: 0, e: 525, cap: 7875, rec: 263, tempo: 60.45 },
+            { l: 0, e: 120, cap: 1800, rec: 60, tempo: 31.97 },
+            { l: 0, e: 1485, cap: 22275, rec: 743, tempo: 120.45 },
+            { l: 5, e: 5, cap: 200, rec: 7, tempo: 23.13 },
+            { l: 200, e: 200, cap: 8000, rec: 267, tempo: 61 },
+            { l: 60, e: 60, cap: 2400, rec: 80, tempo: 35 },
+            { l: 555, e: 555, cap: 22200, rec: 740, tempo: 120.15 }
+        ]
+        };
+    function formatarTempo(minutos) {
+        const hrs = Math.floor(minutos / 60);
+        const min = Math.floor(minutos % 60);
+        const seg = Math.round((minutos - Math.floor(minutos)) * 60);
+        return `${hrs}:${min.toString().padStart(2, '0')}:${seg.toString().padStart(2, '0')}`;
+        }
+
+        function interpolar(tipo, lanca, espada) {
+        const capacidade = lanca * 25 + espada * 15;
+        const lista = tabelas[tipo];
+        lista.sort((a, b) => a.cap - b.cap);
+        for (let i = 0; i < lista.length - 1; i++) {
+            const a = lista[i];
+            const b = lista[i + 1];
+            if (capacidade >= a.cap && capacidade <= b.cap) {
+            const p = (capacidade - a.cap) / (b.cap - a.cap);
+            return {
+                tipo,
+                lanca,
+                espada,
+                capacidade,
+                tempo: a.tempo + p * (b.tempo - a.tempo),
+                recurso: a.rec + p * (b.rec - a.rec)
+            };
+            }
+        }
+        return null;
+        }
+
+        function simular() {
+        const lancaTotal = parseInt(document.getElementById("lancaInput").value) || 0;
+        const espadaTotal = parseInt(document.getElementById("espadaInput").value) || 0;
+        let lanca = lancaTotal;
+        let espada = espadaTotal;
+
+        const saida = document.getElementById("saida");
+        saida.innerHTML = "";
+
+        let resultados = [];
+        let tempoMax = 0;
+
+        for (const tipo of ["Grande", "Media", "Pequena"]) {
+            if (lanca === 0 && espada === 0) break;
+            let melhor = null;
+            for (let i = 0; i <= lanca; i++) {
+            for (let j = 0; j <= espada; j++) {
+                const sim = interpolar(tipo, i, j);
+                if (sim && sim.recurso > 0 && sim.capacidade <= (i * 25 + j * 15)) {
+                if (!melhor || sim.recurso / sim.tempo > melhor.recurso / melhor.tempo) {
+                    melhor = { ...sim };
+                }
+                }
+            }
+            }
+            if (melhor) {
+            const rep = Math.floor(tempoMax / melhor.tempo) || 1;
+            melhor.repeticoes = rep;
+            tempoMax = Math.max(tempoMax, melhor.tempo);
+            resultados.push(melhor);
+            lanca -= melhor.lanca;
+            espada -= melhor.espada;
+            }
+        }
+
+        if (resultados.length === 0) {
+            saida.innerHTML = "<p>Não foi possível realizar nenhuma coleta.</p>";
+            return;
+        }
+
+        let totalRec = 0;
+        resultados.forEach(r => {
+            const recTotal = r.recurso * r.repeticoes;
+            totalRec += recTotal;
+
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+            <h3>Coleta ${r.tipo}</h3>
+            <p><strong>Repetições:</strong> ${r.repeticoes}</p>
+            <p><strong>Tropas:</strong><br>
+                Lança: ${r.lanca * r.repeticoes}<br>
+                Espada: ${r.espada * r.repeticoes}</p>
+            <p><strong>Tempo por ciclo:</strong> ${formatarTempo(r.tempo)}</p>
+            <p><strong>Recurso total:</strong> ${recTotal.toFixed(0)}</p>
+            `;
+            saida.appendChild(card);
+        });
+
+        const resumo = document.createElement("div");
+        resumo.className = "card";
+        resumo.innerHTML = `
+            <h3>Resumo Geral</h3>
+            <p><strong>Duração do ciclo:</strong> ${formatarTempo(tempoMax)}</p>
+            <p><strong>Total de recursos:</strong> ${totalRec.toFixed(0)}</p>
+            <p><strong>Tropas restantes:</strong> ${lanca} lanças, ${espada} espadas</p>
+            <p><strong>Eficiência:</strong> ${(totalRec / tempoMax).toFixed(2)} recursos/minuto</p>
+        `;
+        saida.appendChild(resumo);
+        }
+    </script>
+
+</body>
+</html>
